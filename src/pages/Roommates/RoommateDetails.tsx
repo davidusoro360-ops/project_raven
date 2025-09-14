@@ -202,15 +202,21 @@ const RoommateDetails: React.FC = () => {
         {/* Contact */}
         <Section title="Contact">
           <div className="flex items-center gap-4 text-sm text-gray-700 flex-wrap">
-            {roommate.contactInfo.email && (
-              <a className="inline-flex items-center gap-1 hover:underline" href={`mailto:${roommate.contactInfo.email}`}>
-                <Mail className="w-4 h-4" /> {roommate.contactInfo.email}
-              </a>
-            )}
-            {roommate.contactInfo.phone && (
-              <a className="inline-flex items-center gap-1 hover:underline" href={`tel:${roommate.contactInfo.phone}`}>
-                <Phone className="w-4 h-4" /> {roommate.contactInfo.phone}
-              </a>
+            {isConnected ? (
+              <>
+                {roommate.contactInfo.email && (
+                  <a className="inline-flex items-center gap-1 hover:underline" href={`mailto:${roommate.contactInfo.email}`}>
+                    <Mail className="w-4 h-4" /> {roommate.contactInfo.email}
+                  </a>
+                )}
+                {roommate.contactInfo.phone && (
+                  <a className="inline-flex items-center gap-1 hover:underline" href={`tel:${roommate.contactInfo.phone}`}>
+                    <Phone className="w-4 h-4" /> {roommate.contactInfo.phone}
+                  </a>
+                )}
+              </>
+            ) : (
+              <span className="text-gray-500">Connect to view contact info</span>
             )}
           </div>
           {(roommate.contactInfo.social?.instagram ||

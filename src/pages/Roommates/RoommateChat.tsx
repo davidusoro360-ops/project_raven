@@ -12,6 +12,27 @@ const RoommateChat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Simple simulated responses
+  const getSimulatedResponse = (userContent: string): string => {
+    const lower = userContent.toLowerCase();
+    if (lower.includes('hi') || lower.includes('hello')) return 'Hello! Nice to meet you. What are you looking for in a roommate?';
+    if (lower.includes('room') || lower.includes('budget')) return 'I\'m flexible with budget, around $500-700. How about you?';
+    if (lower.includes('location') || lower.includes('campus')) return 'I prefer near campus. Where are you thinking?';
+    if (lower.includes('clean')) return 'I like to keep things clean but not obsessive.';
+    return 'Sounds good! Tell me more about yourself.';
+  };
+
+  const cryptoRandomId = () => {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      // @ts-ignore
+      return crypto.randomUUID();
+    }
+    return 'm_' + Math.random().toString(36).slice(2);
+  };
+
+  const msgKey = (id: string) => `roommateMessages:${id}`;
 
   useEffect(() => {
     if (!roommate) return;
@@ -64,6 +85,31 @@ const RoommateChat: React.FC = () => {
     const msg = sendMessage(roommate.id, content);
     setMessages((prev) => [...prev, msg]);
     setText('');
+
+    // Simulate roommate response after 2 seconds
+    setTimeout(() => {
+      if (roommate) {
+        const responseContent = getSimulatedResponse(content);
+        const responseMsg: ChatMessage = {
+          id: cryptoRandomId(),
+          role: 'them',
+          content: responseContent,
+          timestamp: new Date().toISOString(),
+        };
+        const all = getMessages(roommate.id);
+        all.push(responseMsg);
+        try {
+          localStorage.setItem(msgKey(roommate.id), JSON.stringify(all));
+        } catch {}
+        setMessages((prev) => [...prev, responseMsg]);
+      }
+    }, 2000);
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; // max 120px height
   };
 
   return (
@@ -133,11 +179,12 @@ const RoommateChat: React.FC = () => {
           <form onSubmit={onSend} className="border-t border-gray-200 p-3">
             <div className="flex items-end gap-2">
               <textarea
+                ref={textareaRef}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={handleTextChange}
                 placeholder="Type your message..."
-                rows={1}
                 className="flex-1 resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-800/20 focus:border-gray-800"
+                style={{ height: 'auto', minHeight: '40px', maxHeight: '120px' }}
               />
               <button
                 type="submit"

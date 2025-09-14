@@ -17,6 +17,10 @@ export interface Roommate {
     current: string;
     preferred: string;
     maxDistance: number; // in km
+    coords?: {
+      lat: number;
+      lng: number;
+    };
   };
   budget: {
     min: number;

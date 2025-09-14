@@ -58,6 +58,42 @@ export interface RankedMatch {
   reasons: string[];
 }
 
+// Centralized option arrays for reuse across the app (e.g., in forms and matching)
+export const GENDERS = ['Any', 'Male', 'Female', 'Other'] as const;
+export const COURSES = ['Any', 'Computer Science', 'Engineering', 'Psychology', 'Business', 'Medicine', 'Arts'] as const;
+export const YEARS = ['Any', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'] as const;
+export const LOCATIONS = ['Any', 'Campus Dorms', 'Near Campus', 'Off-Campus', 'Campus Area'] as const;
+export const CLEANLINESS_OPTIONS = ['Very Clean', 'Clean', 'Moderate', 'Relaxed'] as const;
+export const STUDY_HABITS_OPTIONS = ['Very Quiet', 'Quiet', 'Moderate', 'Social'] as const;
+export const SLEEP_SCHEDULE_OPTIONS = ['Early Bird', 'Night Owl', 'Flexible'] as const;
+export const SOCIAL_LEVEL_OPTIONS = ['Very Social', 'Social', 'Moderate', 'Private'] as const;
+
+// Location to coords mapping (approximate central points for common locations around campus)
+const LOCATION_COORDS: Record<string, { lat: number; lng: number }> = {
+  'Campus Dorms': { lat: 6.5244, lng: 3.3792 },
+  'Near Campus': { lat: 6.5250, lng: 3.3800 },
+  'Off-Campus': { lat: 6.5400, lng: 3.3950 },
+  'Campus Area': { lat: 6.5220, lng: 3.3770 },
+  'Any': { lat: 6.5244, lng: 3.3792 }, // default to central campus location
+};
+
+// Haversine formula to calculate great-circle distance between two lat/lng points in km
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Helper to get coordinates for a location string, or null if not mapped
+function getCoordsForLocation(location: string): { lat: number; lng: number } | null {
+  return LOCATION_COORDS[location] || null;
+}
+
 const KEYS = {
   prefs: 'roommateUserPrefs',
   likes: 'roommateLikes',
@@ -156,10 +192,10 @@ export function sendMessage(id: string, content: string): ChatMessage {
 // Matching
 
 const orderings = {
-  cleanliness: ['Relaxed', 'Moderate', 'Clean', 'Very Clean'] as const,
-  studyHabits: ['Social', 'Moderate', 'Quiet', 'Very Quiet'] as const,
-  sleepSchedule: ['Night Owl', 'Flexible', 'Early Bird'] as const,
-  socialLevel: ['Private', 'Moderate', 'Social', 'Very Social'] as const,
+  cleanliness: [...CLEANLINESS_OPTIONS].reverse(), // Reverse for scoring: from least to most strict (Relaxed to Very Clean)
+  studyHabits: [...STUDY_HABITS_OPTIONS].reverse(), // Reverse for scoring: from most to least quiet (Social to Very Quiet)
+  sleepSchedule: [...SLEEP_SCHEDULE_OPTIONS].reverse(), // Reverse for scoring: from latest to earliest (Night Owl to Early Bird)
+  socialLevel: [...SOCIAL_LEVEL_OPTIONS].reverse(), // Reverse for scoring: from least to most social (Private to Very Social)
 };
 
 function closenessScore<T extends string>(
@@ -196,10 +232,23 @@ export function findMatches(prefs: UserRoommatePreferences, pool: Roommate[] = g
     const genderOk = prefs.gender === 'Any' || r.gender === prefs.gender;
     const courseOk = prefs.course === 'Any' || r.course === prefs.course;
     const yearOk = prefs.year === 'Any' || r.year === prefs.year;
-    const locOk =
-      prefs.location === 'Any' || r.location.current === prefs.location || r.location.preferred === prefs.location;
+    // Location and distance check using coordinates (primary) or fallback to string match
+    let locOk = prefs.location === 'Any';
+    let distanceOk = true;
+    if (!locOk) {
+      const userCoords = getCoordsForLocation(prefs.location);
+      if (userCoords && r.location.coords) {
+        // Calculate actual distance using haversine and check against min of user and roommate maxDistance
+        const dist = haversine(userCoords.lat, userCoords.lng, r.location.coords.lat, r.location.coords.lng);
+        const maxDist = Math.min(prefs.maxDistance, r.location.maxDistance);
+        locOk = dist <= maxDist;
+        distanceOk = locOk;
+      } else {
+        // Fallback to string match if no coords available
+        locOk = r.location.current === prefs.location || r.location.preferred === prefs.location;
+      }
+    }
     const budgetOk = budgetsOverlap(prefs.budgetRange.min, prefs.budgetRange.max, r.budget.min, r.budget.max);
-    const distanceOk = r.location.maxDistance <= prefs.maxDistance;
     return genderOk && courseOk && yearOk && locOk && budgetOk && distanceOk;
   });
 
@@ -226,12 +275,13 @@ export function findMatches(prefs: UserRoommatePreferences, pool: Roommate[] = g
       reasons.push(`${i} shared interest${i > 1 ? 's' : ''}`);
     }
 
-    // small boosts
+    // Small boosts for verified status and rating (scaled 0-1)
     if (r.verified) {
       score += 0.5;
       reasons.push('Verified');
     }
-    score += Math.min(0.5, Math.max(0, (5 - Math.max(0, 5 - r.rating)) * 0.05)); // tiny rating boost
+    score += (r.rating / 5); // rating bonus 0-1 based on 5-star scale
+    if (r.rating >= 4.5) reasons.push('High Rating');
 
     return { roommate: r, score: Math.round(score * 100) / 100, reasons };
   });

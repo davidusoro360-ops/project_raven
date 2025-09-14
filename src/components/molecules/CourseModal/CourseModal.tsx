@@ -81,15 +81,15 @@ export const CourseModal: React.FC<CourseModalProps> = ({
 
           {/* Course Info Badges */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+            <Badge variant="default" className="bg-white/20 text-white border-white/30">
               <Award className="w-3 h-3 mr-1" />
               {course.credits} Credits
             </Badge>
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+            <Badge variant="default" className="bg-white/20 text-white border-white/30">
               <GraduationCap className="w-3 h-3 mr-1" />
               {course.department}
             </Badge>
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+            <Badge variant="default" className="bg-white/20 text-white border-white/30">
               <Calendar className="w-3 h-3 mr-1" />
               {course.semester} {course.year}
             </Badge>
@@ -134,11 +134,26 @@ export const CourseModal: React.FC<CourseModalProps> = ({
                     </div>
                   </div>
 
-                  {/* View on Map Button */}
-                  <button className="w-full bg-gray-900 hover:bg-black text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    View on Map
-                  </button>
+                  {/* Action Buttons - View on Map and View Notes side by side with white bg and black border */}
+                  <div className="flex gap-3">
+                    {/* View on Map Button */}
+                    <button
+                      onClick={() => console.log('View map for course:', course.id)}
+                      className="flex-1 bg-white border-2 border-black hover:border-gray-800 text-black font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      View on Map
+                    </button>
+                    
+                    {/* View Notes Button */}
+                    <button
+                      onClick={() => console.log('View notes for course:', course.id)}
+                      className="flex-1 bg-white border-2 border-black hover:border-gray-800 text-black font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md text-sm flex items-center justify-center gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Notes
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -385,12 +400,6 @@ export const CourseModal: React.FC<CourseModalProps> = ({
             </div>
           </div>
 
-          {/* Join Class Button */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg">
-              Join Class
-            </button>
-          </div>
         </div>
       </div>
     </div>

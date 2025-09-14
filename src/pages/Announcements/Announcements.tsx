@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { AnnouncementCard } from '../../components/molecules/AnnouncementCard/AnnouncementCard';
-import { Calendar } from '../../components/molecules/Calendar/Calendar';
+import { AnnouncementCard } from '@/components/molecules/AnnouncementCard';
+import { Calendar } from '@/components/molecules/Calendar';
 
 export const Announcements: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());

@@ -35,7 +35,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 )}
               >
                 <span className="mr-2.5 flex-shrink-0">
-                  {item.icon}
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    {item.icon}
+                  </div>
                 </span>
                 {item.label}
               </a>

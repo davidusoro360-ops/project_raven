@@ -1,16 +1,17 @@
+// Dashboard.tsx - Main dashboard component with navigation, quick links, announcements, and right sidebar
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Calendar, BarChart3, Grid3X3, Users, HomeIcon, Video, CalendarDays } from 'lucide-react';
+import { Home, Grid3X3, Users, HomeIcon, Video, CalendarDays, Edit, Briefcase, DollarSign, Award, BookOpen } from 'lucide-react';
 import { DashboardLayout } from '@/components/templates/DashboardLayout';
 import { CourseCard } from '@/components/molecules/CourseCard';
 import { AnnouncementCard } from '@/components/molecules/AnnouncementCard';
 import { AnnouncementModal } from '@/components/molecules/AnnouncementModal';
 import { StudyGroupsModal } from '@/components/molecules/StudyGroupsModal';
 import { CourseModal } from '@/components/molecules/CourseModal';
-import { SpecialistsList } from '@/components/molecules/SpecialistsList';
 import { BookHub } from '@/components/molecules/BookHub';
 import { QuickLinks } from '@/components/molecules/QuickLinks';
-import { AppointmentCard } from '@/components/molecules/AppointmentCard';
+import { UpcomingEventsCard } from '@/components/molecules/UpcomingEventsCard';
+import { CourseMatesChat } from '@/components/molecules/CourseMatesChat';
 import { Avatar } from '@/components/atoms/Avatar';
 import { NavigationItem } from '@/components/organisms/Sidebar';
 import { Course } from '@/types';
@@ -25,22 +26,40 @@ const navigationItems: NavigationItem[] = [
     active: true,
   },
   {
-    id: 'schedule',
-    label: 'Schedule',
-    icon: <Calendar className="w-5 h-5" />,
-    href: '/schedule',
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: <BarChart3 className="w-5 h-5" />,
-    href: '/analytics',
-  },
-  {
     id: 'more',
     label: 'More',
     icon: <Grid3X3 className="w-5 h-5" />,
     href: '/more',
+  },
+  {
+    id: 'sign-documents',
+    label: 'Sign Documents',
+    icon: <Edit className="w-5 h-5" />,
+    href: '/sign-documents',
+    active: false,
+  },
+  // Career and gig navigation items for easy extension
+  {
+    id: 'view-jobs',
+    label: 'View Jobs',
+    icon: <Briefcase className="w-5 h-5" />,
+    href: '/jobs',
+    active: false,
+  },
+  {
+    id: 'side-gigs',
+    label: 'Side Gigs',
+    icon: <DollarSign className="w-5 h-5" />,
+    href: '/side-gigs',
+    active: false,
+  },
+  // Financial aid navigation for scholarships - easily extensible
+  {
+    id: 'scholarships',
+    label: 'View Available Scholarships',
+    icon: <Award className="w-5 h-5" />,
+    href: '/scholarships',
+    active: false,
   },
 ];
 
@@ -307,34 +326,6 @@ const mockCourses: Course[] = [
   },
 ];
 
-const specialistCategories = [
-  {
-    id: '1',
-    title: 'Mental coaches',
-    count: 5,
-    specialists: [
-      { id: '1', name: 'Dr. Johnson', avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face' },
-      { id: '2', name: 'Sarah Wilson', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' },
-      { id: '3', name: 'Mike Brown', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face' },
-      { id: '8', name: 'Anna Lee', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face' },
-      { id: '9', name: 'Tom Wilson', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Psychologists',
-    count: 11,
-    specialists: [
-      { id: '4', name: 'Dr. Davis', avatar: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=150&h=150&fit=crop&crop=face' },
-      { id: '5', name: 'Lisa Chen', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face' },
-      { id: '6', name: 'Robert Taylor', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face' },
-      { id: '7', name: 'Emma Garcia', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face' },
-      { id: '10', name: 'James Kim', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face' },
-      { id: '11', name: 'Maria Santos', avatar: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=150&h=150&fit=crop&crop=face' },
-    ],
-  },
-];
-
 const mockBooks = [
   {
     id: '1',
@@ -370,6 +361,94 @@ const mockBooks = [
   },
 ];
 
+// Mock data for Course Mates Chat - adapted from specialists for course mates
+const chatCategories = [
+  {
+    id: '1',
+    title: 'CSC101 Classmates',
+    count: 6,
+    mates: [
+      {
+        id: '1',
+        name: 'Alex Johnson',
+        avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '2',
+        name: 'Sarah Wilson',
+        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '3',
+        name: 'Mike Brown',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '8',
+        name: 'Anna Lee',
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '9',
+        name: 'Tom Wilson',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '12',
+        name: 'Emily Davis',
+        avatar: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=150&h=150&fit=crop&crop=face',
+      },
+    ],
+  },
+  {
+    id: '2',
+    title: 'MTH102 Study Group',
+    count: 8,
+    mates: [
+      {
+        id: '4',
+        name: 'Dr. Davis',
+        avatar: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '5',
+        name: 'Lisa Chen',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '6',
+        name: 'Robert Taylor',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '7',
+        name: 'Emma Garcia',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '10',
+        name: 'James Kim',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '11',
+        name: 'Maria Santos',
+        avatar: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '13',
+        name: 'David Lee',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        id: '14',
+        name: 'Sophie Kim',
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      },
+    ],
+  },
+];
+
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
@@ -393,7 +472,6 @@ export const Dashboard: React.FC = () => {
   const handleStudyGroupsClick = () => {
     setIsStudyGroupsModalOpen(true);
   };
-
 
   const handleCloseStudyGroupsModal = () => {
     setIsStudyGroupsModalOpen(false);
@@ -434,16 +512,30 @@ export const Dashboard: React.FC = () => {
     },
     {
       id: '4',
-      title: 'Schedule Timetable',
-      description: 'Plan your schedule',
-      icon: <CalendarDays className="w-6 h-6 text-gray-900" />,
-      onClick: () => console.log('Schedule Timetable clicked'),
+      title: 'Find Tutorials/Tutors',
+      description: 'Access learning resources',
+      icon: <BookOpen className="w-6 h-6 text-gray-900" />,
+      onClick: () => navigate('/tutors'),
+    },
+    {
+      id: '5',
+      title: 'View Jobs',
+      description: 'Explore career opportunities',
+      icon: <Briefcase className="w-6 h-6 text-gray-900" />,
+      onClick: () => navigate('/jobs'),
+    },
+    {
+      id: '6',
+      title: 'Side Gigs',
+      description: 'Find freelance work',
+      icon: <DollarSign className="w-6 h-6 text-gray-900" />,
+      onClick: () => navigate('/side-gigs'),
     },
   ];
 
   const rightSidebar = (
     <div className="space-y-6">
-      <SpecialistsList categories={specialistCategories} />
+      <CourseMatesChat categories={chatCategories} />
       <BookHub books={mockBooks} />
     </div>
   );
@@ -526,56 +618,57 @@ export const Dashboard: React.FC = () => {
             <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-pulse shadow-lg"></div>
           </div>
 
-          {/* Enhanced See All Button */}
-          <div className="relative">
+          {/* Enhanced Action Buttons - Compact side-by-side layout for announcements and timetable */}
+          <div className="relative flex gap-3">
+            {/* View All Announcements Button - Shortened with black border */}
             <button
               onClick={() => navigate('/announcements')}
-              className="group w-full flex items-center justify-between py-4 px-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 ease-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-[0.99] border border-gray-200 hover:border-blue-200"
+              className="group flex-1 flex items-center justify-between py-3 px-4 bg-white rounded-lg transition-all duration-300 ease-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 active:scale-[0.98] border-2 border-black hover:border-gray-800 text-left"
             >
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-10 h-10 bg-white group-hover:bg-blue-50 rounded-xl transition-all duration-300 ease-out shadow-sm group-hover:shadow-md border border-gray-200 group-hover:border-blue-200">
-                  <svg className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-50 rounded-lg group-hover:bg-gray-100 transition-colors duration-300 border border-black">
+                  <svg className="w-4 h-4 text-black group-hover:text-gray-800 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
-                <div className="text-left">
-                  <span className="block text-base font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-300 ease-out">
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
                     View All Announcements
                   </span>
-                  <span className="block text-sm text-gray-500 group-hover:text-blue-600 transition-colors duration-300 ease-out">
-                    Browse complete announcement history
+                  <span className="text-xs text-gray-500">
+                    4 new
                   </span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
-                  4 new
-                </span>
-                <div className="flex items-center text-gray-400 group-hover:text-blue-600 transition-all duration-300 ease-out">
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300 ease-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </div>
+              <div className="flex items-center text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </button>
 
-            {/* Subtle glow effect */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/0 via-blue-400/5 to-indigo-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            {/* View Timetable Button - Compact with black border */}
+            <button
+              onClick={() => navigate('/schedule')}
+              className="flex items-center justify-center py-3 px-4 bg-white rounded-lg transition-all duration-300 ease-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 active:scale-[0.98] border-2 border-black hover:border-gray-800 min-w-[120px]"
+            >
+              <div className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-black group-hover:text-gray-800" />
+                <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
+                  View Timetable
+                </span>
+              </div>
+            </button>
           </div>
         </section>
 
         {/* Quick Links Section */}
         <QuickLinks links={quickLinks} />
 
-        {/* Psychotherapy Appointment */}
-        <AppointmentCard
-          title="Psychotherapy"
-          doctorName="Rohan Mckenzie"
-          doctorTitle="Doctor"
-          doctorAvatar="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face"
-          date="Today"
-          time="01:00 PM - 02:00 PM"
+        {/* Upcoming Events Card with black border */}
+        <UpcomingEventsCard 
+          className="border-2 border-black rounded-xl"
+          onEventClick={(eventId: string) => console.log('Event clicked:', eventId)}
         />
       </div>
 

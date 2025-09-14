@@ -87,7 +87,11 @@ export const StudyGroupsModal: React.FC<StudyGroupsModalProps> = ({
     setStudyGroups(prev => 
       prev.map(group => 
         group.id === groupId 
-          ? { ...group, isJoined: !group.isJoined, participants: group.isJoined ? group.participants - 1 : group.participants + 1 }
+          ? { 
+              ...group, 
+              isJoined: !group.isJoined, 
+              participants: !group.isJoined ? group.participants + 1 : group.participants - 1 
+            }
           : group
       )
     );

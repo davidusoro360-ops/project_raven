@@ -42,14 +42,30 @@ export const RoommatePreferences: React.FC = () => {
     preferences: {},
     interests: [],
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const existing = loadPreferences();
     if (existing) setForm(existing);
   }, []);
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (form.budgetRange.min < 0) newErrors.budgetMin = 'Minimum budget must be non-negative';
+    if (form.budgetRange.max < 0) newErrors.budgetMax = 'Maximum budget must be non-negative';
+    if (form.budgetRange.min > form.budgetRange.max) newErrors.budgetRange = 'Minimum budget must be less than or equal to maximum';
+    if (form.maxDistance < 0) newErrors.maxDistance = 'Maximum distance must be non-negative';
+    if (form.interests) {
+      const trimmed = form.interests.map(i => i.trim()).filter(Boolean);
+      if (trimmed.length !== form.interests.length) newErrors.interests = 'Interests cannot be empty or contain only whitespace';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     savePreferences(form);
     navigate('/roommates/results');
   };
@@ -148,18 +164,41 @@ export const RoommatePreferences: React.FC = () => {
                 <input
                   type="number"
                   value={form.budgetRange.min}
-                  onChange={(e) => setForm((f) => ({ ...f, budgetRange: { ...f.budgetRange, min: Number(e.target.value || 0) } }))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value || 0);
+                    setForm((f) => ({ ...f, budgetRange: { ...f.budgetRange, min: val } }));
+                    if (val >= 0 && val <= form.budgetRange.max) {
+                      setErrors((err) => ({ ...err, budgetMin: '', budgetRange: '' }));
+                    } else if (val < 0) {
+                      setErrors((err) => ({ ...err, budgetMin: 'Minimum budget must be non-negative' }));
+                    } else {
+                      setErrors((err) => ({ ...err, budgetRange: 'Minimum budget must be less than or equal to maximum' }));
+                    }
+                  }}
                   className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
                 />
+                {errors.budgetMin && <p className="text-red-500 text-xs mt-1">{errors.budgetMin}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Budget Max (USD)</label>
                 <input
                   type="number"
                   value={form.budgetRange.max}
-                  onChange={(e) => setForm((f) => ({ ...f, budgetRange: { ...f.budgetRange, max: Number(e.target.value || 0) } }))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value || 0);
+                    setForm((f) => ({ ...f, budgetRange: { ...f.budgetRange, max: val } }));
+                    if (val >= 0 && val >= form.budgetRange.min) {
+                      setErrors((err) => ({ ...err, budgetMax: '', budgetRange: '' }));
+                    } else if (val < 0) {
+                      setErrors((err) => ({ ...err, budgetMax: 'Maximum budget must be non-negative' }));
+                    } else {
+                      setErrors((err) => ({ ...err, budgetRange: 'Maximum budget must be greater than or equal to minimum' }));
+                    }
+                  }}
                   className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
                 />
+                {errors.budgetMax && <p className="text-red-500 text-xs mt-1">{errors.budgetMax}</p>}
+                {errors.budgetRange && <p className="text-red-500 text-xs mt-1">{errors.budgetRange}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Max Distance (km)</label>
@@ -167,9 +206,18 @@ export const RoommatePreferences: React.FC = () => {
                   type="number"
                   value={form.maxDistance}
                   min={0}
-                  onChange={(e) => setForm((f) => ({ ...f, maxDistance: Number(e.target.value || 0) }))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value || 0);
+                    setForm((f) => ({ ...f, maxDistance: val }));
+                    if (val >= 0) {
+                      setErrors((err) => ({ ...err, maxDistance: '' }));
+                    } else {
+                      setErrors((err) => ({ ...err, maxDistance: 'Maximum distance must be non-negative' }));
+                    }
+                  }}
                   className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
                 />
+                {errors.maxDistance && <p className="text-red-500 text-xs mt-1">{errors.maxDistance}</p>}
               </div>
             </div>
           </section>
@@ -244,12 +292,19 @@ export const RoommatePreferences: React.FC = () => {
               type="text"
               value={(form.interests || []).join(', ')}
               onChange={(e) => {
-                const items = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                const raw = e.target.value;
+                const items = raw.split(',').map(s => s.trim()).filter(Boolean);
                 setForm((f) => ({ ...f, interests: items }));
+                if (items.length > 0 && items.every(i => i.length > 0)) {
+                  setErrors((err) => ({ ...err, interests: '' }));
+                } else if (raw.trim()) {
+                  setErrors((err) => ({ ...err, interests: 'Interests cannot be empty or contain only whitespace' }));
+                }
               }}
               placeholder="e.g. Reading, Hiking, Music"
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm"
             />
+            {errors.interests && <p className="text-red-500 text-xs mt-1">{errors.interests}</p>}
           </section>
 
           <div className="flex items-center justify-between">
@@ -271,7 +326,8 @@ export const RoommatePreferences: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-gray-800 to-gray-900 hover:from-black hover:to-gray-900"
+              disabled={Object.keys(errors).length > 0}
+              className="px-6 py-2 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-gray-800 to-gray-900 hover:from-black hover:to-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               See Matches
             </button>
