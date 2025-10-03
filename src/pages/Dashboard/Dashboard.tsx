@@ -333,7 +333,7 @@ const mockBooks = [
     author: 'James Clear',
     price: 25,
     condition: 'like-new' as const,
-    cover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&h=300&fit=crop',
+    cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f',
   },
   {
     id: '2',
@@ -341,7 +341,7 @@ const mockBooks = [
     author: 'Robert Martin',
     price: 35,
     condition: 'good' as const,
-    cover: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=300&fit=crop',
+    cover: 'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a',
   },
   {
     id: '3',
@@ -349,7 +349,7 @@ const mockBooks = [
     author: 'David Thomas',
     price: 30,
     condition: 'new' as const,
-    cover: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=300&fit=crop',
+    cover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c',
   },
   {
     id: '4',
@@ -357,7 +357,7 @@ const mockBooks = [
     author: 'Gang of Four',
     price: 40,
     condition: 'good' as const,
-    cover: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=200&h=300&fit=crop',
+    cover: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8',
   },
 ];
 
@@ -568,7 +568,7 @@ export const Dashboard: React.FC = () => {
         {/* Tailored for you Section */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            tailored for you
+            Today's Lectures
           </h2>
 
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
